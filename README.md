@@ -21,6 +21,8 @@ library(magick)
 ### Loading Alberta Earthquakes Data
 ```r
   sdf <- read.csv('./csv files/Recent_AB_Earthquakes.csv')
+  
+  head(sdf)
 ```
 
 
