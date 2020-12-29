@@ -13,60 +13,14 @@ Data Prepration
 
 We need to install below libraries for this analysis:
 
-    ## Loading required package: maptools
-
-    ## Loading required package: sp
-
-    ## Checking rgeos availability: FALSE
-    ##      Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
-    ##      which has a restricted licence. It is disabled by default;
-    ##      to enable gpclib, type gpclibPermit()
-
-    ## Loading required package: rgdal
-
-    ## rgdal: version: 1.5-18, (SVN revision 1082)
-    ## Geospatial Data Abstraction Library extensions to R successfully loaded
-    ## Loaded GDAL runtime: GDAL 3.0.4, released 2020/01/28
-    ## Path to GDAL shared files: D:/OneDrive/OneDrive - University of Calgary/Documents/R/win-library/4.0/rgdal/gdal
-    ## GDAL binary built with GEOS: TRUE 
-    ## Loaded PROJ runtime: Rel. 6.3.1, February 10th, 2020, [PJ_VERSION: 631]
-    ## Path to PROJ shared files: D:/OneDrive/OneDrive - University of Calgary/Documents/R/win-library/4.0/rgdal/proj
-    ## Linking to sp version:1.4-4
-    ## To mute warnings of possible GDAL/OSR exportToProj4() degradation,
-    ## use options("rgdal_show_exportToProj4_warnings"="none") before loading rgdal.
-
-    ## Loading required package: ggplot2
-
-    ## Loading required package: gganimate
-
-    ## Loading required package: ggmap
-
-    ## Google's Terms of Service: https://cloud.google.com/maps-platform/terms/.
-
-    ## Please cite ggmap if you use it! See citation("ggmap") for details.
-
-    ## Loading required package: scales
-
-    ## Loading required package: magick
-
-    ## Linking to ImageMagick 6.9.11.34
-    ## Enabled features: cairo, freetype, fftw, ghostscript, lcms, pango, rsvg, webp
-    ## Disabled features: fontconfig, x11
-
-    ## Loading required package: tidyverse
-
-    ## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --
-
-    ## v tibble  3.0.4     v dplyr   1.0.2
-    ## v tidyr   1.1.2     v stringr 1.4.0
-    ## v readr   1.4.0     v forcats 0.5.0
-    ## v purrr   0.3.4
-
-    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-    ## x readr::col_factor() masks scales::col_factor()
-    ## x purrr::discard()    masks scales::discard()
-    ## x dplyr::filter()     masks stats::filter()
-    ## x dplyr::lag()        masks stats::lag()
+    require(maptools)
+    require(rgdal)
+    require(ggplot2)
+    require(gganimate)
+    require(ggmap)
+    require(scales) # for function date_format
+    require(magick)
+    require(tidyverse)
 
 first we are Loading Alberta Earthquakes Data prepared in `csv` format.
 
@@ -102,7 +56,7 @@ Apply this conversion on loaded data
       sdf$Easting=sdf$Easting/1000
       sdf$Northing=sdf$Northing/1000
 
-here we need to convert date column
+here we need to convert date column to the format as `(mm/dd/yyyy)`
 
       #converting date
       sdf$DATETIME_ <- as.Date(sdf$DATETIME_,"%m/%d/%Y")
@@ -110,7 +64,8 @@ here we need to convert date column
       sdf$year_month=paste(as.character(sdf$YEAR_),"/",as.character(sdf$MONTH_),"/1",sep="") #"/",toString(sdf$MONTH_),"/","1")
       sdf$year_month<- as.Date(sdf$year_month,"%Y/%m/%d")
 
-converting magnitude to traffic light system
+To identify the intensity of earthquake, we convert its magnitude to
+traffic light system
 
       sdf$traffic_light<-cut(sdf$MAG, breaks = c(-Inf, 2, 4, Inf), labels=c("Green", "Yellow", "Red"),include.lowest = TRUE)
       
@@ -118,7 +73,7 @@ converting magnitude to traffic light system
       
       write.csv(sdf,"'./csv files/prepared-sdf.csv")
 
-here we are generating UTM base shape files
+here we are generating UTM based shape files for the flavored area
 
       leducreefs <- readShapePoly("./shape files/WCSB_ATLAS_1994_LEDUC_REEF_OUTLINE.shp")
       leducreefs.points <- fortify(leducreefs)
@@ -140,91 +95,147 @@ here we are generating UTM base shape files
                    fill = "lightblue",
                    alpha = 0.3) 
 
-Analysis and Animation
-----------------------
-
-      sdf<-read.csv("./csv files/prepared-sdf.csv")
-
-      #Set your API Key
-      ggmap::register_google(key = "AIzaSyD5e-QpVDdW5sU21RYFFStK97kT0fnfjO0")
-      has_google_key()
+Data Visualization
+------------------
 
     ## [1] TRUE
 
-      sdf$DATETIME_<-as.Date(sdf$DATETIME_)
+First we consider the number of earthquake regarding each year and
+display their distribution in a histogram
 
-      sdf$year_month<-as.Date(sdf$year_month)
-
-
-      #converting magnitude to traffic light system
-      sdf$traffic_light_kaush<-cut(sdf$MAG, breaks = c(-Inf, 1,2,3,4, Inf), labels=c("LightGreen","DarkGreen","Yellow", "Orange","Red"), include.lowest = TRUE)
-
-
-
-      #Alberta Map
-
-      Alberta <- get_map(location = c(-120.5,48.5,-109.5,60.5), source = 'google', maptype =  "terrain",zoom=6)
-
-    ## Source : http://tile.stamen.com/terrain/6/10/18.png
-
-    ## Source : http://tile.stamen.com/terrain/6/11/18.png
-
-    ## Source : http://tile.stamen.com/terrain/6/12/18.png
-
-    ## Source : http://tile.stamen.com/terrain/6/10/19.png
-
-    ## Source : http://tile.stamen.com/terrain/6/11/19.png
-
-    ## Source : http://tile.stamen.com/terrain/6/12/19.png
-
-    ## Source : http://tile.stamen.com/terrain/6/10/20.png
-
-    ## Source : http://tile.stamen.com/terrain/6/11/20.png
-
-    ## Source : http://tile.stamen.com/terrain/6/12/20.png
-
-    ## Source : http://tile.stamen.com/terrain/6/10/21.png
-
-    ## Source : http://tile.stamen.com/terrain/6/11/21.png
-
-    ## Source : http://tile.stamen.com/terrain/6/12/21.png
-
-    ## Source : http://tile.stamen.com/terrain/6/10/22.png
-
-    ## Source : http://tile.stamen.com/terrain/6/11/22.png
-
-    ## Source : http://tile.stamen.com/terrain/6/12/22.png
-
-      count_by_year<-ggplot(data= sdf, aes(x =DATETIME_,  ..count..,fill=factor(sdf$traffic_light_kaush,levels=c("Red","Orange", "Yellow", "DarkGreen","LightGreen"))))+
+      count_by_year <- ggplot(data= sdf, aes(x =DATETIME_,  ..count..,fill=factor(sdf$traffic_light_kaush,levels=c("Red","Orange", "Yellow","DarkGreen","LightGreen"))))+
       geom_histogram( color="black")+
       xlab("Year") + ylab("Count") +
       scale_color_brewer(palette = "Spectral") +
       scale_x_date(breaks = date_breaks("2 year"),labels = date_format("%Y")) +theme_bw()+
       scale_fill_manual(values = c("LightGreen" = "green","DarkGreen"="darkgreen", "Yellow" = "yellow","Orange" = "orange","Red" = "red"),name = "Traffic Light System:    ")+
       theme(legend.position="none")
-
       count_by_year
 
-    ## Warning: Use of `sdf$traffic_light_kaush` is discouraged. Use
-    ## `traffic_light_kaush` instead.
+![](README_files/figure-markdown_strict/count_by_year-1.png)
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+In second part we will visualize these variations based on the monthly
+records
 
-![](README_files/figure-markdown_strict/unnamed-chunk-8-2.png)
-
-      count_by_year_anim<-count_by_year +transition_time(sdf$year_month)+shadow_mark() +labs(title = "Year: {substr(frame_time,1,7)}")
-      #count_by_year_anim<-count_by_year +transition_states(sdf$year_month, transition_length = .1, state_length = .1) +labs(title = "Year:     {closest_state}")+shadow_mark()
-
+      count_by_year_anim <- count_by_year +transition_time(sdf$year_month)+shadow_mark() +labs(title = "Year: {substr(frame_time,1,7)}")
 
       #count_by_year_anim
 
-      anim1=animate(count_by_year_anim,nframes=length(unique(sdf$year_month)), fps=4)
-
-    ## Warning: Use of `sdf$traffic_light_kaush` is discouraged. Use
-    ## `traffic_light_kaush` instead.
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+      anim1 = animate(count_by_year_anim,nframes=length(unique(sdf$year_month)), fps=4)
 
       anim1
 
-![](README_files/figure-markdown_strict/unnamed-chunk-8-1.gif)
+![](README_files/figure-markdown_strict/anim1-1.gif)
+
+Then we will display the magnitude of earthquakes on a histogram
+
+      mag_by_year <-ggplot(data= sdf, aes(x = MAG ,  ..count..,fill=factor(sdf$traffic_light_kaush,levels=c("Red","Orange", "Yellow", "DarkGreen","LightGreen"))))+
+      geom_histogram(colour='black',binwidth = 0.1)+
+      xlab("Magnitude") + ylab("Count") +
+      scale_color_brewer(palette = "Spectral") +
+      scale_fill_manual(values = c("LightGreen" = "green","DarkGreen"="darkgreen", "Yellow" = "yellow","Orange" = "orange","Red" = "red"),name = "Traffic Light System:    ")+
+      theme_bw()+theme(legend.position="none")
+
+      mag_by_year
+
+![](README_files/figure-markdown_strict/mag_by_year-1.png)
+
+Then we will display the magnitude of earthquakes as an animated gif
+based on monthly records
+
+      mag_by_year_anim <- mag_by_year +transition_time(sdf$year_month) +labs(title = "Year: {substr(frame_time,1,7)}")
+
+      #mag_by_year_anim
+
+      anim2=animate(mag_by_year_anim,nframes=length(unique(sdf$year_month)), fps=4)
+
+      anim2
+
+![](README_files/figure-markdown_strict/anim2-1.gif)
+
+Now we will display seismicity data on Alberta map during different year
+
+      #Alberta Map
+      Alberta <- get_map(location = c(-120.5,48.5,-109.5,60.5), source = 'google', maptype =  "terrain",zoom=6)
+      LL_seismicity_map <- ggmap(Alberta)+
+      geom_point(data=sdf,aes(x=sdf$LON, y=sdf$LAT, color=factor(sdf$traffic_light_kaush,levels=c("Red","Orange", "Yellow", "DarkGreen","LightGreen"))))+
+      labs(title="Seismicity Map", x="Longitude", y="Latitude")+
+      scale_color_manual(values = c("LightGreen" = "green","DarkGreen"="darkgreen", "Yellow" = "yellow","Orange" = "orange","Red" = "red"),name = "Traffic Light System:    ")+
+      theme_bw()+theme(legend.position="none")#+
+      #geom_point(aes(x=-117.5,y=54.5),size = 20, pch = 1)+#almost Fox Creek Lat/Long
+      #geom_point(aes(x=-115,y=52.5),size = 20, pch = 1)#almost Rocky MOuntain House Lat/Long
+      #geom_point(aes(x=-116.8089,y=54.4022),size = 20, pch = 1)+#exact Fox Creek Lat/Long
+      #geom_point(aes(x=-114.9183,y=52.3793),size = 20, pch = 1)#exact Rocky MOuntain House Lat/Long
+
+      LL_seismicity_map
+
+![](README_files/figure-markdown_strict/LL_seismicity_map-1.png)
+
+and these data will be animated on monthly based
+
+      LL_seismicity_anim <- LL_seismicity_map +  
+      transition_time(as.Date(sdf$year_month)) +
+      labs(title = "Year: {substr(frame_time,1,7)}")+
+      ease_aes('linear')  
+
+      #LL_seismicity_anim
+
+      anim3 = animate(LL_seismicity_anim,nframes=length(unique(as.Date(sdf$year_month))), fps=4)
+
+
+      anim3
+
+![](README_files/figure-markdown_strict/anim3-1.gif)
+
+      depth_lat_mag <- ggplot()+
+      geom_point(data=sdf,aes(x=sdf$LAT, y=sdf$DEPTH, color=factor(sdf$traffic_light_kaush,levels=c("Red","Orange", "Yellow", "DarkGreen","LightGreen"))))+
+      labs(x="Latitude", y="Depth")+
+      scale_color_manual(values = c("LightGreen" = "green","DarkGreen"="darkgreen", "Yellow" = "yellow","Orange" = "orange","Red" = "red"),name = "Traffic Light System:    ")+
+      theme_bw()+theme(legend.position="none")+
+      scale_y_continuous(trans = "reverse")#+
+      #geom_vline(xintercept = 52.5, linetype="solid", 
+                # color = "blue", size=20, alpha=0.1)+
+      #geom_vline(xintercept = 54.5, linetype="solid", 
+                # color = "blue", size=20, alpha=0.1)
+
+      depth_lat_mag
+
+![](README_files/figure-markdown_strict/depth_lat_mag-1.png)
+
+      depth_lat_mag_anim<-depth_lat_mag +  
+      transition_time(sdf$DATETIME_) +transition_time(sdf$year_month) +labs(title = "Year: {substr(frame_time,1,7)}")
+
+      anim4=animate(depth_lat_mag_anim,nframes=length(unique(sdf$year_month)), fps=4)
+
+      anim4
+
+![](README_files/figure-markdown_strict/anim4-1.gif)
+
+      depth_long_mag <- ggplot()+
+      geom_point(data=sdf,aes(x=sdf$LON, y=sdf$DEPTH, color=factor(sdf$traffic_light_kaush,levels=c("Red","Orange", "Yellow", "DarkGreen","LightGreen"))))+
+      labs( x="Longitude", y="Depth")+
+      scale_color_manual(values = c("LightGreen" = "green","DarkGreen"="darkgreen", "Yellow" = "yellow","Orange" = "orange","Red" = "red"),name = "Traffic Light System:    ")+
+      theme_bw()+theme(legend.position="none")+
+      scale_y_continuous(trans = "reverse")#+
+      #geom_vline(xintercept = -117.5, linetype="solid", 
+                # color = "blue", size=20, alpha=0.1)+
+      #geom_vline(xintercept = -115, linetype="solid", 
+               #  color = "blue", size=20, alpha=0.1)
+
+      
+      #geom_point(aes(x=-116.8089,y=54.4022),size = 20, pch = 1)+#Fox Creek Lat/Long
+      #geom_point(aes(x=-114.9183,y=52.3793),size = 20, pch = 1)#Rocky MOuntain House Lat/Long
+      
+
+      depth_long_mag
+
+![](README_files/figure-markdown_strict/depth_long_mag-1.png)
+
+      depth_long_mag_anim <-depth_long_mag +  
+      transition_time(sdf$DATETIME_) +transition_time(sdf$year_month) +labs(title = "Year: {substr(frame_time,1,7)}")
+
+      anim5=animate(depth_long_mag_anim,nframes=length(unique(sdf$year_month)), fps=4)
+
+      anim5
+
+![](README_files/figure-markdown_strict/anim5-1.gif)
